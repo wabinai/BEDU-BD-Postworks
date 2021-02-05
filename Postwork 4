@@ -1,0 +1,59 @@
+#Ahora investigarás la dependencia o independencia del número de goles anotados por el equipo de casa y el número de goles anotados por el equipo visitante mediante un procedimiento denominado bootstrap, revisa bibliografía en internet para que tengas nociones de este desarrollo.
+
+#Ya hemos estimado las probabilidades conjuntas de que el equipo de casa anote X=x goles (x=0,1,... ,8), y el equipo visitante anote Y=y goles (y=0,1,... ,6), en un partido. Obtén una tabla de cocientes al dividir estas probabilidades conjuntas por el producto de las probabilidades marginales correspondientes.
+
+#Se obtiene y guarda la base en el directorio
+# setwd("~/Respaldo/Documents/BEDU/Modulo 2/Sesion 2/Postwork")
+# dir()
+# lista<-list.files(getwd(),pattern = ".csv")
+# basesp <- lapply(lista, read.csv)
+# library(dplyr)
+# basesp <- lapply(basesp, select, Date, HomeTeam, AwayTeam, FTHG, FTAG, FTR)
+# basefinalp <- do.call(rbind, basesp)
+# setwd("~/Respaldo/Documents/BEDU/Modulo 2/Sesion 4")
+# write.csv(basefinalp, file = "base4.csv")
+
+library(readr)
+base4 <- read_csv("https://raw.githubusercontent.com/wabinai/BEDU-BD-Postworks/main/BD/Postwork4/base4.csv")
+View(base4)
+
+#Se obtienen las tablas de probabilidad
+conjunta<-prop.table(table(base4$FTHG,base4$FTAG))
+conjunta
+margx<-prop.table(table(base4$FTHG)) #probabilidades marginales de x
+margx #9 valores
+margy<-prop.table(table(base4$FTAG)) #probabilidades marginales de y
+margy #7 valores
+
+#Se obtiene la tabla de cocientes
+cocientes<-matrix(0,nrow = 9, ncol = 7)
+for (i in 1:9) {
+  for (j in 1:7){
+    cocientes[i,j]=conjunta[i,j]/(margx[i]*margy[j])
+  }
+}
+cocientes
+hist(cocientes)
+
+#Mediante un procedimiento de boostrap, obtén más cocientes similares a los obtenidos en la tabla del punto anterior. Esto para tener una idea de las distribuciones de la cual vienen los cocientes en la tabla anterior. Menciona en cuáles casos le parece razonable suponer que los cocientes de la tabla en el punto 1, son iguales a 1 (en tal caso tendríamos independencia de las variables aleatorias X y Y).
+
+#Bootstrap
+basef<-base4[,c("FTHG","FTAG")]
+data<-list()
+cocientesf<-matrix(0,nrow = 9, ncol = 7)
+medias<-c(1:1000)
+for (k in 1:1000){
+  resample<-sample(1:nrow(basef),nrow(basef), replace = TRUE)
+  conjuntaf<-prop.table(table(basef$FTHG[resample],basef$FTAG[resample]))
+  margxf<-prop.table(table(basef$FTHG[resample]))
+  margyf<-prop.table(table(basef$FTAG[resample]))
+  for (i in 1:length(margxf)) {
+    for (j in 1:length(margyf)){
+      cocientesf[i,j]=conjuntaf[i,j]/(margxf[i]*margyf[j])
+    }
+  }
+  data[[k]]<-cocientesf #se guarda la matriz de cocientes
+  medias[k]<-mean(cocientesf) #se determinan las medias de los cocientes
+}
+hist(medias) #se crea el histograma para ver la distribución de los cocientes obtenidos mediante el bootstrap
+mean(medias) #se observa que la media de los cocientes se encuentra alrededor de 0.85
