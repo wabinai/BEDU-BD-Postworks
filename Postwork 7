@@ -1,0 +1,29 @@
+# Instalacion librerias necesarias
+install.packages("DBI")
+install.packages("mongolite")
+install.packages("data.table")
+
+# Llamado a librerias
+library(DBI)
+library(mongolite)
+library("data.table")
+
+# Alojar el fichero data.csv en una base de datos llamada match_games, nombrando al collection como match
+match=data.table::fread("data.csv")
+coleccion = mongo(collection = "match", db = "match_games")
+coleccion$insert(match) 
+
+# Realizar un count para conocer el número de registros que se tiene en la base
+coleccion$count()
+
+# Realiza una consulta utilizando la sintaxis de Mongodb, en la base de datos para conocer
+# el número de goles que metió el Real Madrid el 20 de diciembre de 2015 y contra que equipo jugó,
+# ¿perdió ó fue goleada?
+coleccion$find('{"date":"2015-12-20", "home_team":"Real Madrid"}')
+
+#Agrega el dataset de mtcars a la misma BDD
+coleccion = mongo(collection = "mtcars", db = "match_games")
+coleccion$insert(mtcars)
+  
+# Cerrar la conexión con la BDD
+rm(coleccion)
