@@ -1,0 +1,27 @@
+POSTWORK 1
+
+#Se importan los datos
+library(readr)
+sp1 <- read_csv("https://raw.githubusercontent.com/wabinai/BEDU-BD-Postworks/main/BD/Postwork1/SP1.csv")
+View(sp1)
+
+#FTHG and HG = Full Time Home Team Goals
+#FTAG and AG = Full Time Away Team Goals
+base<-subset(sp1,select = c("FTHG","FTAG")) #Se extraen las columnas de interes
+View(base)
+
+#Probabilidad marginal para X=FTHG
+tablax<-table(base$FTHG) #frecuencia absoluta para cada valor de x
+tablarelx<-tablax/sum(tablax) #frecuencia relativa de cada valor de x = probalilidades marginales de x
+tablarelx
+
+#Probabilidad marginal para Y=FTAG
+tablay<-table(base$FTAG) #frecuencia absoluta para cada valor de Y
+tablarely<-tablay/sum(tablay) #frecuencia relativa de cada valor de y = probalilidades marginales de y
+tablarely
+
+#Probabilidad conjunta
+tabla<-table(base) #frecuencia absoluta de x y y
+tabla
+tablaprob<-tabla/sum(tabla) #Frecuencia relativa de x y y
+tablaprob
