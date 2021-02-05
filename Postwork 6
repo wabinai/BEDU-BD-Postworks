@@ -1,0 +1,28 @@
+#Importa el conjunto de datos match.data.csv a R y realiza lo siguiente:
+library(readr)
+match_data <- read_csv("https://raw.githubusercontent.com/beduExpert/Programacion-con-R-Santander/master/Sesion-06/Postwork/match.data.csv")
+View(match_data)
+
+#Agregando la nueva columna sumagoles que contiene la suma de goles por partido.
+match_data_suma <- mutate(match_data,sumagoles=match_data$home.score+match_data$away.score)
+match_data_suma 
+
+#Obténiendo el promedio por mes de la suma de goles.
+library(dplyr)
+library(lubridate)
+matches<-mutate(match_data_suma,date=as.Date(date))
+matches
+matches$date = ymd(matches$date)
+
+promedio_goles_mes<-matches %>% 
+  group_by(Year=year(date), Month=month(date)) %>%
+  summarise(Promedio_goles=mean(sumagoles))
+
+#Creando la serie de tiempo del promedio por mes de la suma de goles hasta diciembre de 2019.
+#install.packages("ggfortify")
+
+library(ggfortify)
+matchests <-ts(promedio_goles_mes["Promedio_goles"])
+
+#Grafica de la serie de tiempo
+plot(matchests,main="Promedio de goles al mes",ylab="Numero de goles")
