@@ -1,0 +1,24 @@
+#Importación de los datos de soccer de las temporadas 2017/2018, 2018/2019 y 2019/2020 de la primera división de la liga española
+setwd("C:/Users/tzuzu/Desktop/BEDU/R/Postwork")
+lista<-list.files(getwd(),pattern = ".csv")
+datos <- lapply(lista, read.csv)
+
+#Obten una mejor idea de las características de los data frames
+#Usando str, head, View y summary
+str(datos)
+head(datos)
+View(datos)
+summary(datos)
+
+#Usando dplyr y lapply para seleccionar únicamente las columnas Date, HomeTeam, AwayTeam, FTHG, FTAG y FTR; esto para cada uno de los data frames.
+library(dplyr)
+datos_nuevos <-lapply(datos, select, Date, HomeTeam, AwayTeam, FTHG, FTAG, FTR)
+datos_nuevos_dataFrame <- rbind(datos_nuevos[[1]],datos_nuevos[[2]],datos_nuevos[[3]])
+datos_nuevos_dataFrame
+
+#Arreglando fechas con mutate y as.Date Ademas de formar un unico data frame con las columnas de interes
+fechas_corregidas <- mutate(datos_nuevos_dataFrame,Date2 = as.Date(Date,format="%d/%m/%y"))
+datos_nuevos_dataFrame$Date <- fechas_corregidas$Date2
+head(datos_nuevos_dataFrame)
+
+write.csv(datos_nuevos_dataFrame,"C:/Users/tzuzu/Desktop/BEDU/R/Postwork/datospostwork2.csv", row.names = TRUE)
