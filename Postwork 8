@@ -1,0 +1,142 @@
+#install.packages("ggplot2")
+#install.packages("shiny")
+#install.packages("shinydashboard")
+#install.packages("shinythemes")
+#install.packages("dplyr")
+library(ggplot2)
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
+library(dplyr)
+#Leyendo data
+data <-  read.csv("match.data.csv", header = T)
+data <- mutate(data, FTR = ifelse(home.score > away.score, "H", ifelse(home.score < away.score, "A", "D")))
+#Creando UIShiny
+ui <- 
+  
+  fluidPage(
+    
+    dashboardPage(
+      
+      dashboardHeader(title = "Predicciones"),
+      
+      dashboardSidebar(
+        
+        sidebarMenu(
+          menuItem("Graficos de barras", tabName = "graficos", icon = icon("dashboard")),
+          menuItem("Prob. Marginal Goles local-visitante", tabName = "probabilidad", icon = icon("dashboard")),
+          menuItem("Data Table", tabName = "data_table", icon = icon("dashboard")),
+          menuItem("Factores de ganancia", tabName = "momios", icon = icon("dashboard"))
+          
+        )
+        
+      ),
+      
+      dashboardBody(
+        
+        tabItems(
+          
+          # Graficos de barras - goles a favor
+          tabItem(tabName = "graficos",
+                  fluidRow(
+                    
+                    titlePanel("Goles a favor y en contra"), 
+                    selectInput("x", "Selecciona una opcion",
+                                choices = c("home.score", "away.score")),
+                    
+                    
+                    plotOutput("plot", height = 450, width = 750)
+                    
+                    
+                  )
+          ),
+          
+          # Graficos probabilidades marginales
+          tabItem(tabName = "probabilidad", 
+                  fluidRow(
+                    titlePanel(h3("Probabilidad marginal de goles en casa")),
+                    
+                    img(src = "pmarg_local.png") ,
+                    titlePanel(h3("Probabilidad marginal de goles en casa")),
+                    img(src = "pmarg_visitantes.png"),
+                    titlePanel(h3("Mapa de calor")),
+                    img(src = "heatmap.png")
+                    
+                  )
+          ),
+          
+          
+          #Data table con informacion
+          tabItem(tabName = "data_table",
+                  fluidRow(        
+                    titlePanel(h3("Data Table")),
+                    dataTableOutput ("data_table")
+                  )
+          ), 
+          
+          #Momios - factor de ganancia
+          tabItem(tabName = "momios",
+                  fluidRow(
+                    h3("Factor de ganancia Maximo"),
+                    img( src = "Rplot1.png", 
+                         height = 350, width = 550),
+                    h3("Factor de ganancia Promedio"),
+                    img( src = "Rplot2.png", 
+                         height = 350, width = 550)
+                    
+                    
+                    
+                  )
+                  
+          )
+          
+        )
+      )
+    )
+  )
+
+
+#Creando el servidor para el UI
+server <- function(input, output) {
+  
+  #Creando el grafico de barras
+  output$plot <- renderPlot({
+    
+    data <-  read.csv("match.data.csv", header = T)
+    
+    data <- mutate(data, FTR = ifelse(home.score > away.score, "H", ifelse(home.score < away.score, "A", "D")))
+    
+    x <- data[,input$x]
+    
+    data %>% ggplot(aes(x, fill = FTR)) + 
+      geom_bar() + 
+      facet_wrap("away.team") +
+      labs(x =input$x, y = "Goles") + 
+      ylim(0,50)
+    
+    
+  })
+  
+  # Creando las graficas de dispersion
+  output$output_momios <- renderPlot({ 
+    
+    ggplot(mtcars, aes(x =  mtcars[,input$a] , y = mtcars[,input$y], 
+                       colour = mtcars[,input$z] )) + 
+      geom_point() +
+      ylab(input$y) +
+      xlab(input$x) + 
+      theme_linedraw() + 
+      facet_grid(input$z)
+    
+  })   
+  
+  #Creando el data Table
+  output$data_table <- renderDataTable( {data}, 
+                                        options = list(lengthMenu = c(10,25,50),
+                                                       pageLength = 10)
+  )
+  
+}
+
+
+shinyApp(ui, server)
