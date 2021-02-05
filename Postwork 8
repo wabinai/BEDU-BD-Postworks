@@ -140,3 +140,4 @@ server <- function(input, output) {
 
 
 shinyApp(ui, server)
+#El video del dashboard se encuentra en: https://tzuzul.shinyapps.io/Postwork8/
